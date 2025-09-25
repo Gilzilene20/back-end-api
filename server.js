@@ -1,10 +1,18 @@
+const { Pool } = pkg;
+let pool = null;
+
 import pkg from "pg";
 import dotenv from "dotenv";
 
 
-import express from "express";      // Requisição do pacote do express
-const app = express();              // Instancia o Express
-const port = 3000;                  // Define a porta
+function conectarBD() {
+  if (!pool) {
+    pool = new Pool({
+      connectionString: process.env.URL_BD,
+    });
+  }
+  return pool;
+}
 
 
 dotenv.config();         // Carrega e processa o arquivo .env
@@ -36,9 +44,6 @@ try {
 app.get("/questoes", async (req, res) => {
 	console.log("Rota GET /questoes solicitada"); // Log no terminal para indicar que a rota foi acessada
 	
-//server.js
-const { Pool } = pkg; // Obtém o construtor Pool do pacote pg para gerenciar conexões com o banco de dados PostgreSQL
-
 const db = new Pool({
   // Cria uma nova instância do Pool para gerenciar conexões com o banco de dados
   connectionString: process.env.URL_BD, // Usa a variável de ambiente do arquivo .env DATABASE_URL para a string de conexão
