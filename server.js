@@ -1,49 +1,38 @@
 // ######
-// Local onde os pacotes de dependências serão importados
+// Importação dos pacotes de dependências
 // ######
-import express from "express"; // Requisição do pacote do express
-import pkg from "pg"; // Requisição do pacote do pg (PostgreSQL)
-import dotenv from "dotenv"; // Importa o pacote dotenv para carregar variáveis de ambiente
+import express from "express";
+import pkg from "pg";
+import dotenv from "dotenv";
 
 // ######
-// Local onde as configurações do servidor serão feitas
+// Configurações iniciais do servidor
 // ######
-const app = express(); // Inicializa o servidor Express
-const port = 3000; // Define a porta onde o servidor irá escutar
-dotenv.config(); // Carrega as variáveis de ambiente do arquivo .env
+const app = express();
+const port = 3000;
 
-// Variáveis e construtor para o Pool de Conexões
+dotenv.config(); // Carrega as variáveis de ambiente do .env
+
 const { Pool } = pkg; // Obtém o construtor Pool do pacote pg
-let pool = null; // Variável para armazenar o pool de conexões (uma única vez)
 
-// ######
-// Função para obter ou criar o pool de conexões com o banco de dados
-// ######
+let pool = null; // Variável para armazenar o pool de conexões
 
-/**
- * Retorna o pool de conexões com o banco de dados.
- * O pool é criado apenas na primeira chamada.
- */
+// Função para conectar com o banco de dados
 function conectarBD() {
-  // Se o pool ainda não foi criado, cria uma nova instância
   if (!pool) {
     pool = new Pool({
       connectionString: process.env.URL_BD,
     });
   }
-  // Retorna o pool (a mesma instância sempre)
   return pool;
 }
 
 // ######
-// Local onde as rotas (endpoints) serão definidas
+// Rota raiz - Verifica status da API e conexão com o banco
 // ######
-
-// Rota Raiz: Verifica o status do servidor e do BD
 app.get("/", async (req, res) => {
   console.log("Rota GET / solicitada");
 
-  // Reutiliza o Pool de conexões
   const db = conectarBD();
 
   let dbStatus = "ok";
@@ -53,21 +42,19 @@ app.get("/", async (req, res) => {
     dbStatus = e.message;
   }
 
-  // Resposta com as informações do autor e status do BD
   res.json({
-    message: "API para Gestão de Questões de Provas",
-    author: "Gilzilene Orneles de Sales",
+    message: "API para gerenciamento de questões",
+    author: "Gilzilene Orneles de Sales", // Substitua aqui pelo seu nome
     dbStatus: dbStatus,
   });
 });
 
-// ---
-
-// Rota para buscar todas as questões cadastradas
+// ######
+// Rota /questoes - Retorna todas as questões do banco
+// ######
 app.get("/questoes", async (req, res) => {
   console.log("Rota GET /questoes solicitada");
 
-  // Reutiliza o Pool de conexões
   const db = conectarBD();
 
   try {
@@ -77,16 +64,15 @@ app.get("/questoes", async (req, res) => {
   } catch (e) {
     console.error("Erro ao buscar questões:", e);
     res.status(500).json({
-      error: "Erro interno do servidor",
+      erro: "Erro interno do servidor",
       mensagem: "Não foi possível buscar as questões",
     });
   }
 });
 
 // ######
-// Local onde o servidor irá escutar as requisições
+// Inicialização do servidor
 // ######
 app.listen(port, () => {
-  // Inicia o servidor na porta definida
   console.log(`Serviço rodando na porta: ${port}`);
 });
